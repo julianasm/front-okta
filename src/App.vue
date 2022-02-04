@@ -23,11 +23,14 @@
 </template>
 
 <script>
+
 export default {
+  
   name: 'app',
   data: function () {
     return { authenticated: false }
   },
+  
   async created () {
     await this.isAuthenticated()
     this.$auth.authStateManager.subscribe(this.isAuthenticated)

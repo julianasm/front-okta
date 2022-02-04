@@ -1,15 +1,17 @@
 <template>
   <div id="home">
-    <h1>Okta Single-Page App Demo</h1>
-    <div v-if="!this.$root.authenticated">
-      <v-card>
-        <v-list>
-          <v-list-item
-            v-for="(item, i) in orders"
-            :key="i">
-          </v-list-item>
-        </v-list>
-      </v-card>
+  <n-list bordered>
+    <template #header> hhh </template>
+    <template #footer> fff </template>
+    <n-list-item v-for="(item, i) in orders" :key="i">
+      <n-thing title="Thing" title-extra="extra" description="description">
+        {}
+      </n-thing>
+    </n-list-item>
+    <n-list-item>
+      <n-thing title="Thing" title-extra="extra" description="description" />
+    </n-list-item>
+  </n-list>
     </div>
 
     <div v-if="this.$root.authenticated">
@@ -18,14 +20,20 @@
         {{this.caffeineLevel}}
       </p>
     </div>
-  </div>
 </template>
 
 <script>
-
 import axios from 'axios';
+import { NList } from 'naive-ui'
+import { NListItem } from 'naive-ui'
+import { NThing } from 'naive-ui'
 
 export default {
+  components: {
+    NList,
+    NListItem,
+    NThing
+  },
   name: 'home',
   data: function () {
     return {
@@ -35,32 +43,26 @@ export default {
       accessToken: ''
     }
   },
-  created () { this.setup() },
+  created () { this.setup(), this.getOpenOrders },
   methods: {
     async setup () {
       if (this.$root.authenticated) {
         this.claims = await this.$auth.getUser()
         this.accessToken = this.$auth.getAccessToken();
         console.log(`Authorization: Bearer ${this.accessToken}`);
-        try {
-          let response = await axios.get('http://localhost:8081/howcaffeinatedami',
-              { headers: {'Authorization': 'Bearer ' + this.accessToken } } );
-          this.caffeineLevel = response.data;
-        }
-        catch (error) {
-          this.caffeineLevel = `${error}`
-        }
       }
     },
 
-    async getOpenOrders(){
+   async getOpenOrders(){
       const config = {
       headers: { 'Authorization': 'Bearer' + this.accessToken }
       };
       try {
-          let response = await axios.get('http://lkocalhost:8081/api/orders',
-          config)
-          this.orders = response.data;
+          await axios.get('http://localhost:8081/api/orders',
+          config).then(response => {
+            this.orders = response.data;
+            console.log("teste", this.orders);
+          })      
       }
       catch (error) {
         this.orders = `${error}`
