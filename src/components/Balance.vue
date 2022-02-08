@@ -1,31 +1,19 @@
 <template>
   <div id="home">
-  <n-page-header title="Suas ordens">
-    <n-table :bordered="false" :single-line="false">
+  <n-page-header title="Saldo de ações">
+<n-table :bordered="false" :single-line="false">
     <thead>
       <tr>
         <th>Nome</th>
         <th>Símbolo</th>
         <th>Quantidade</th>
-        <th>Preço</th>
-        <th>Tipo</th>
-        <th>Status</th>
-        <th>Data de abertura</th>
       </tr>
     </thead>
     <tbody>
-      <tr v-for="(item, i) in orders" :key="i">
+      <tr v-for="(item, i) in stocks" :key="i" >
         <td>{{item.stock_name}}</td>
         <td>{{item.stock_symbol}}</td>
         <td>{{item.volume}}</td>
-        <td>{{item.price}}</td>
-        <td v-if="item.type == 1">Compra</td>
-        <td v-else>Venda</td>
-        <td v-if="item.status == 1">Aberta</td>
-        <td v-else>Fechada</td>
-        <td>
-        <n-time :time="Date.parse(item.created_on)" format="dd/MM/yyyy"></n-time>
-        </td>
       </tr>
     </tbody>
     </n-table>
@@ -37,12 +25,10 @@
 <script>
 import axios from 'axios';
 import { NTable } from 'naive-ui'
-import { NTime } from 'naive-ui'
 import { NPageHeader } from 'naive-ui'
 
 export default {
   components: {
-    NTime,
     NTable,
     NPageHeader
   },
@@ -51,11 +37,11 @@ export default {
     return {
       claims: '',
       caffeineLevel: '',
-      orders: [],
+      stocks: {},
       accessToken: '',
     }
   },
-  created () { this.setup(), this.getOpenOrders() },
+  created () { this.setup(), this.getUserStockBalance() },
   methods: {
     async setup () {
       if (this.$root.authenticated) {
@@ -65,22 +51,23 @@ export default {
       }
     },
 
-   async getOpenOrders(){
+   async getUserStockBalance(){
       this.accessToken = this.$auth.getAccessToken();
       const config = {
       headers: { 'Authorization': 'Bearer ' + this.accessToken }
       };
       console.log(config)
       let id_user = 1;
+      let idStock = 1;
       try {
-          let response = await axios.get(`http://localhost:8080/api/orders/${id_user}`,
+          let response = await axios.get(`http://localhost:8080/api/user_stock/${id_user}/${idStock}`,
           config)
-          this.orders = response.data;
-          console.log("teste", this.orders)
+          this.stocks = response.data;
+          console.log("teste", this.stocks)
       
       }
       catch (error) {
-        this.orders = `${error}`
+        this.stocks = `${error}`
       }
     }
   }

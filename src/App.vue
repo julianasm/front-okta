@@ -8,6 +8,9 @@
         <router-link to="/login" v-if="!authenticated">
           Login
         </router-link>
+        <router-link to="/balance">
+          Balance
+        </router-link>
         <router-link to="/profile" v-if="authenticated" >
           Profile
         </router-link>
