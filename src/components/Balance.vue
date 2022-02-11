@@ -10,13 +10,24 @@
       </tr>
     </thead>
     <tbody>
-      <tr v-for="(item, i) in stocks" :key="i" >
-        <td>{{item.stock_name}}</td>
-        <td>{{item.stock_symbol}}</td>
-        <td>{{item.volume}}</td>
+      <tr>
+        <td>{{stocks.stock_name}}</td>
+        <td>{{stocks.stock_symbol}}</td>
+        <td>{{stocks.volume}}</td>
       </tr>
     </tbody>
     </n-table>
+
+  <n-layout has-sider>
+<n-layout-sider>
+    <h2>
+      Saldo monetário
+    </h2>
+      <h3>
+       USD$ {{user.dollar_balance}}.00
+      </h3>
+    </n-layout-sider>
+  </n-layout>
   </n-page-header>
   </div>
 </template>
@@ -26,11 +37,13 @@
 import axios from 'axios';
 import { NTable } from 'naive-ui'
 import { NPageHeader } from 'naive-ui'
+import { NLayout } from 'naive-ui' 
 
 export default {
   components: {
     NTable,
-    NPageHeader
+    NPageHeader,
+    NLayout
   },
   name: 'home',
   data: function () {
@@ -39,9 +52,10 @@ export default {
       caffeineLevel: '',
       stocks: {},
       accessToken: '',
+      user: ''
     }
   },
-  created () { this.setup(), this.getUserStockBalance() },
+  created () { this.setup(), this.getUserStockBalance(), this.getUserDollarBalance() },
   methods: {
     async setup () {
       if (this.$root.authenticated) {
@@ -69,6 +83,23 @@ export default {
       catch (error) {
         this.stocks = `${error}`
       }
+    },
+
+    async getUserDollarBalance() {
+      this.accessToken = this.$auth.getAccessToken();
+      const config = {
+      headers: { 'Authorization': 'Bearer ' + this.accessToken }
+      };
+      let id_user = 1;
+      try {
+          let response = await axios.get(`http://localhost:8080/api/users/${id_user}`,
+          config)
+          this.user = response.data;
+          console.log("user", this.user)
+      } catch (error) {
+        this.user = `${error}`
+      }
+
     }
   }
 }

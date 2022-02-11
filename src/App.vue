@@ -11,6 +11,9 @@
         <router-link to="/balance">
           Balance
         </router-link>
+        <router-link to="/order">
+          Order
+        </router-link>
         <router-link to="/profile" v-if="authenticated" >
           Profile
         </router-link>
