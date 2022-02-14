@@ -27,7 +27,7 @@
       </n-input-number>
     </n-form-item>
   </n-form>
-  <n-button @click="saveOrder()">
+  <n-button @click="mountOrder()">
     Salvar
   </n-button>
   <n-layout>
@@ -124,8 +124,8 @@ export default {
       headers: { 'Authorization': 'Bearer ' + this.accessToken }
       };
       console.log(config)
-      let id_user = 1;
-      let idStock = 1;
+      let id_user = 4;
+      let idStock = 10;
       try {
           let response = await axios.get(`http://localhost:8080/api/user_stock/${id_user}/${idStock}`,
           config)
@@ -161,7 +161,7 @@ export default {
       const config = {
       headers: { 'Authorization': 'Bearer ' + this.accessToken }
       };
-      let id_user = 1;
+      let id_user = 4;
       try {
           let response = await axios.get(`http://localhost:8080/api/users/${id_user}`,
           config)
@@ -207,21 +207,36 @@ export default {
       console.log(this.stockInfo)
     },
 
-    async saveOrder(){
-     this.findStockName(this.model.selectedValue)
-     this.userOrder.id_user = 1
-     this.userOrder.id_stock = 1
-     this.userOrder.stock_symbol = this.stockInfo.stock_symbol
+    async mountOrder(){
+     await this.findStockName(this.model.selectedValue)
+     this.userOrder.id_user = 4
+     this.userOrder.id_stock = this.stockInfo.id
      this.userOrder.stock_name = this.stockInfo.stock_name
+     this.userOrder.stock_symbol = this.stockInfo.stock_symbol
      this.userOrder.volume = this.model.volumeValue
      this.userOrder.price = this.model.priceValue
      this.userOrder.type = this.tipo
      this.userOrder.status = 1
      this.userOrder.remaining_volume = this.model.volumeValue
      console.log(this.userOrder)
-      console.log(this.model.selectedValue)
-    }
+     this.saveOrder(this.userOrder) 
+    },
 
+    async saveOrder(orderInfo){
+      const data = orderInfo
+      this.accessToken = this.$auth.getAccessToken();
+      const config = {
+      headers: { 'Authorization': 'Bearer ' + this.accessToken }
+      };
+      try {
+        let response = await axios.post('http://localhost:8080/api/new_order',
+        data, config)
+        return response
+      } catch (error) {
+        let response = `${error}`
+        console.log(response)
+      }  
+    }
   }
 }
 </script>
