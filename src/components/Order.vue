@@ -1,32 +1,35 @@
 <template>
   <div id="home">
   <n-page-header title="Nova ordem">
-  <n-form>
+  <n-form @submit="saveOrder()">
     <n-form-item label="Selecione o tipo de ordem" path="radioGroupValue">
       <n-radio-group v-model:value="model.radioGroupValue">
         <n-space>
-          <n-radio value="Compra" @click="searchAllStocks()">Compra</n-radio>
-          <n-radio value="Venda">Venda</n-radio>
+          <n-radio v-model:value="tipo1" @click="searchAllStocks()">Compra</n-radio>
+          <n-radio v-model:value="tipo2"  @click="userStocksForSell()">Venda</n-radio>
         </n-space>
       </n-radio-group>
     </n-form-item>
       <n-form-item label="Selecione a ação desejada">
        <n-select
-          placeholder="Select"
           :options="options"
+          v-model:value="model.selectedValue"
           filterable
+          @blur="clearStockInfo()"
        />
     </n-form-item>
-    <n-form-item label="Input">
-      <n-input placeholder="Input" type="text"/>
+    <n-form-item  label="Quantidade">
+      <n-input-number v-model:value="model.volumeValue" placeholder="Input" :default-value="1" :min="1"/>
     </n-form-item>
-    <n-form-item label="Textarea">
-      <n-input
-        placeholder="Textarea"
-        type="textarea"
-      />
+    <n-form-item  label="Preço">
+      <n-input-number  v-model:value="model.priceValue" placeholder="Insira o valor" :default-value="1" :min="1">
+        <template #prefix>R$</template>
+      </n-input-number>
     </n-form-item>
   </n-form>
+  <n-button @click="saveOrder()">
+    Salvar
+  </n-button>
   <n-layout>
     <h2>
       Saldo monetário
@@ -47,10 +50,13 @@ import { NLayout } from 'naive-ui'
 import { NForm } from 'naive-ui'
 import { NFormItem } from 'naive-ui'
 import { NSelect } from 'naive-ui'
-import { NInput } from 'naive-ui'
+import { NInputNumber } from 'naive-ui'
 import { NRadio} from 'naive-ui'
 import { NRadioGroup } from 'naive-ui'
 import { NSpace } from 'naive-ui'
+import { NButton } from 'naive-ui'
+import { ref } from 'vue'
+
 
 export default {
   components: {
@@ -59,10 +65,11 @@ export default {
     NForm,
     NSelect,
     NFormItem,
-    NInput,
+    NInputNumber,
     NRadio,
     NSpace,
-    NRadioGroup
+    NRadioGroup,
+    NButton
   },
   name: 'home',
   data: function () {
@@ -76,7 +83,27 @@ export default {
       venda: false,
       options: [{}],
       AllStockOptions: [],
-      model: {radioGroupValue : null}
+      stockInfo: {},
+      model: ref({
+        radioGroupValue : null,
+        volumeValue: null,
+        priceValue: null,
+        selectedValue: null
+      }),
+      preco: 0,
+      tipo1: 1,
+      tipo2: 2,
+      userOrder: {
+        id_user: '',
+        id_stock: '',
+        stock_symbol: '',
+        stock_name: '',
+        volume: '',
+        price: '',
+        type: '',
+        status: '',
+        remaining_volume: ''
+      }
     }
   },
 
@@ -85,6 +112,7 @@ export default {
     async setup () {
       if (this.$root.authenticated) {
         this.claims = await this.$auth.getUser()
+        console.log("teste para pegar id do user", this.claims)
         this.accessToken = this.$auth.getAccessToken();
         console.log(`Authorization: Bearer ${this.accessToken}`);
       }
@@ -109,17 +137,24 @@ export default {
       }
     },
 
-    /*async userStocksForSell(){
-      this.venda = true;
-      if (this.venda == true){
-            this.options = this.stocks.map((v) => ({
-            label: v.stock_name,
-            value: v.id.id_stock,
-          }));
+    clearStockInfo() {
+      this.options = [{}]
+    },
+
+
+
+    async userStocksForSell(){
+      this.options.label = ''
+      this.options.value = ''
+      this.tipo = 2
+      this.venda = true
+      if (this.venda){
+            this.options[0].label = this.stocks.stock_name
+            this.options[0].value = this.stocks.id.id_stock
       }
-      console.log(this.options)
       this.venda = !this.venda;
-    },*/
+      console.log(this.tipo)
+    },
 
     async getUserDollarBalance() {
       this.accessToken = this.$auth.getAccessToken();
@@ -139,6 +174,9 @@ export default {
     },
 
     async searchAllStocks() {
+      this.options.label = ''
+      this.options.value = ''
+      this.tipo = 1
       this.accessToken = this.$auth.getAccessToken();
       const config = {
       headers: { 'Authorization': 'Bearer ' + this.accessToken }
@@ -149,13 +187,41 @@ export default {
           this.AllStockOptions = response.data;
           this.options = this.AllStockOptions.map((v) => ({
             label: v.stock_name,
-            value: v.id.id_stock,
+            value: v.id,
           }));
-          console.log(this.options)
       } catch (error) {
         this.AllStockOptions = `${error}`
       }
+      console.log(this.tipo)
+    },
+
+    async findStockName(id_stock) {
+      this.accessToken = this.$auth.getAccessToken();
+      const config = {
+      headers: { 'Authorization': 'Bearer ' + this.accessToken }
+      };
+      // find STOCK NAME pelo simbolo
+      let response = await axios.get(`http://localhost:8080/stock-info/${id_stock}`,
+      config)
+      this.stockInfo = response.data
+      console.log(this.stockInfo)
+    },
+
+    async saveOrder(){
+     this.findStockName(this.model.selectedValue)
+     this.userOrder.id_user = 1
+     this.userOrder.id_stock = 1
+     this.userOrder.stock_symbol = this.stockInfo.stock_symbol
+     this.userOrder.stock_name = this.stockInfo.stock_name
+     this.userOrder.volume = this.model.volumeValue
+     this.userOrder.price = this.model.priceValue
+     this.userOrder.type = this.tipo
+     this.userOrder.status = 1
+     this.userOrder.remaining_volume = this.model.volumeValue
+     console.log(this.userOrder)
+      console.log(this.model.selectedValue)
     }
+
   }
 }
 </script>
