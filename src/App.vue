@@ -1,42 +1,80 @@
 <template>
   <div id="app2">
-    <nav>
+    <nav title="Solinf Broker">
       <div>
-        <router-link to="/">
+        <n-button round style="margin: 16px" color="white">
+        <router-link style="text-decoration: none; color: black;" to="/">
           Home
         </router-link>
-        <router-link to="/login" v-if="!authenticated">
+        <n-space></n-space>
+        </n-button>
+        <n-button v-if="!authenticated" color="white" round style="margin: 16px">
+        <router-link style="text-decoration: none; color: black;" to="/login" v-if="!authenticated">
           Login
         </router-link>
-        <router-link to="/balance">
-          Balance
+        </n-button>
+        <n-button color="white" round >
+        <router-link style="text-decoration: none; color: black;" to="/balance">
+          Ballance
         </router-link>
-        <router-link to="/order">
+        </n-button>
+        <n-button style="margin: 16px" color="white" round>
+        <router-link style="text-decoration: none; color: black;" to="/order">
           Order
         </router-link>
-        <router-link to="/profile" v-if="authenticated" >
-          Profile
-        </router-link>
-        <a v-if="authenticated" v-on:click="logout()">
+        </n-button>
+        <n-button style="margin: 16px" color="white" round v-if="authenticated">
+          <router-link style="text-decoration: none; color: black;" to="/profile">
+            Profile
+          </router-link>
+        </n-button>
+        <n-button v-if="authenticated" style="margin: 16px;" round color="white">
+        <a v-on:click="logout()" style="text-decoration: none; color: black;">
           Logout
         </a>
+        </n-button>
       </div>
     </nav>
-    <div id="content">
-      <router-view/>
+    <div>
     </div>
+    </div>
+    <div id="content">
   </div>
+      <router-view />
+      <footer style="width: 100%;">
+        <n-button color="white" style="margin: 16px;" round>
+          <router-link style="text-decoration: none; color: black;" to="/order">
+            Contato
+          </router-link>
+        </n-button>
+        <n-button color="white" round>
+          <router-link style="text-decoration: none; color: black;" to="/order">
+            Suporte
+          </router-link>
+        </n-button>
+      </footer>
 </template>
 
 <script>
+import { darkTheme } from 'naive-ui'
+import { NButton } from 'naive-ui'
+import { NSpace } from 'naive-ui'
 
 export default {
-  
+  components: {
+    NButton,
+    NSpace
+  },
   name: 'app',
   data: function () {
     return { authenticated: false }
   },
-  
+  setup() {
+    return {
+      darkTheme
+    }
+  },
+
   async created () {
     await this.isAuthenticated()
     this.$auth.authStateManager.subscribe(this.isAuthenticated)
@@ -57,13 +95,19 @@ export default {
 </script>
 
 <style>
-nav div a { margin-right: 10px }
+div a { margin-right: 10px; }
 #app {
-  width: 800px;
+  width: 100%;
   margin: 0 auto;
+  background-color: rgba(144, 218, 231, 0.678);
 }
-a {
-  text-decoration: underline;
-  cursor: pointer;
+nav {
+  width: 100%;
+  background-color: #328094a4;
 }
+
+footer {
+  background-color: #328094a4;
+}
+
 </style>

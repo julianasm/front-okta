@@ -23,3 +23,10 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+
+.login {
+  height: 655px;
+}
+</style>

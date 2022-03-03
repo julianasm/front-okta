@@ -1,88 +1,162 @@
 <template>
-  <div id="home">
-  <n-page-header title="Suas ordens">
-    <n-table :bordered="false" :single-line="false">
-    <thead>
-      <tr>
-        <th>Nome</th>
-        <th>Símbolo</th>
-        <th>Quantidade</th>
-        <th>Preço</th>
-        <th>Tipo</th>
-        <th>Status</th>
-        <th>Data de abertura</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="(item, i) in orders" :key="i">
-        <td>{{item.stock_name}}</td>
-        <td>{{item.stock_symbol}}</td>
-        <td>{{item.volume}}</td>
-        <td>{{item.price}}</td>
-        <td v-if="item.type == 1">Compra</td>
-        <td v-else>Venda</td>
-        <td v-if="item.status == 1">Aberta</td>
-        <td v-else>Fechada</td>
-        <td>
-        <n-time :time="Date.parse(item.created_on)" format="dd/MM/yyyy"></n-time>
-        </td>
-      </tr>
-    </tbody>
+  <div style="background-color: #bddfbf">
+    <n-page-header style="font-size: 16px; padding: 16px">
+      Bem vindo, {{ claims.name }} !
+    </n-page-header>
+    <n-table :bordered="true" :single-line="false">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Símbolo</th>
+          <th>Max ask</th>
+          <th>Min ask</th>
+          <th>Max bid</th>
+          <th>Min ask</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(item, i) in eventData" :key="i">
+          <td>{{ item.stock_name }}</td>
+          <td>{{ item.stock_symbol }}</td>
+          <td>{{ item.ask_max }}</td>
+          <td>{{ item.ask_min }}</td>
+          <td>{{ item.bid_max}}</td>
+          <td>{{ item.bid_min }}</td>
+          <td>
+            <n-time
+              v-if="item.created_on != null"
+              :time="Date.parse(item.created_on)"
+              format="dd/MM/yyyy"
+            ></n-time>
+          </td>
+        </tr>
+      </tbody>
     </n-table>
-  </n-page-header>
   </div>
 </template>
 
 
 <script>
-import axios from 'axios';
-import { NTable } from 'naive-ui'
-import { NTime } from 'naive-ui'
-import { NPageHeader } from 'naive-ui'
+import axios from "axios";
+import { NPageHeader } from "naive-ui";
+import { fetchEventSource } from "@microsoft/fetch-event-source";
+import { NTable } from "naive-ui";
+import { NTime } from "naive-ui"
 
 export default {
   components: {
-    NTime,
+    NPageHeader,
     NTable,
-    NPageHeader
+    NTime
   },
-  name: 'home',
+
+  name: "home",
   data: function () {
     return {
-      claims: '',
-      caffeineLevel: '',
-      orders: [],
-      accessToken: '',
-    }
+      claims: "",
+      caffeineLevel: "",
+      accessToken: "",
+      size: 0,
+      id_user: "",
+      user: {
+        username: "",
+        password: "",
+        dollar_balance: "",
+        enabled: "",
+      },
+      eventData: []
+    };
   },
-  created () { this.setup(), this.getOpenOrders() },
+  created() {
+    this.setup();
+    this.getIdUser();
+    this.stockEventSource();
+  },
   methods: {
-    async setup () {
+    async setup() {
       if (this.$root.authenticated) {
-        this.claims = await this.$auth.getUser()
+        this.claims = await this.$auth.getUser();
+        console.log("username", this.claims.email);
         this.accessToken = this.$auth.getAccessToken();
         console.log(`Authorization: Bearer ${this.accessToken}`);
       }
     },
 
-   async getOpenOrders(){
+    async getIdUser() {
       this.accessToken = this.$auth.getAccessToken();
       const config = {
-      headers: { 'Authorization': 'Bearer ' + this.accessToken }
+        headers: { Authorization: "Bearer " + this.accessToken },
       };
-      console.log(config)
-      let id_user = 1;
+      this.claims = await this.$auth.getUser();
+      let username = this.claims.email;
       try {
-          let response = await axios.get(`http://localhost:8080/api/orders/${id_user}`,
-          config)
-          this.orders = response.data;
-          console.log("teste", this.orders)
-      
+        let response = await axios.get(
+          `http://localhost:8080/api/users/username/${username}`,
+          config
+        );
+        this.id_user = response.data.id;
+        console.log("id user", this.id_user);
+      } catch (error) {
+        if (error.response.status == 404) {
+          this.createUser();
+          console.log(error.response.status);
+        }
       }
-      catch (error) {
-        this.orders = `${error}`
+    },
+
+    async createUser() {
+      let password = (Math.random() + 1).toString(36).substring(7);
+      this.accessToken = this.$auth.getAccessToken();
+      const config = {
+        headers: { Authorization: "Bearer " + this.accessToken },
+      };
+      this.user.username = this.claims.email;
+      this.user.password = password;
+      this.user.dollar_balance = 1000;
+      this.user.enabled = true;
+      const data = this.user;
+      console.log(data);
+      try {
+        let response = await axios.post(
+          `http://localhost:8080/api/new_user`,
+          data,
+          config
+        );
+        console.log(response);
+      } catch (error) {
+        let response = `${error}`;
+        console.log(response);
       }
-    }
-  }
-}
+    },
+
+    async stockEventSource() {
+      let accessToken = this.$auth.getAccessToken();
+      console.log("chegou no await");
+      await fetchEventSource("http://localhost:8082/subscribe", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        onmessage(ev) {
+          this.eventData = JSON.parse(ev.data);
+          console.log("data", this.eventData);
+        },
+      });
+    },
+  },
+};
 </script>
+
+<style>
+.light-green {
+  height: 100%;
+  background-color: rgb(156, 211, 221);
+}
+
+.light-blue2 {
+  background-color: #90dae7ad;
+}
+
+#home {
+  background-color: rgb(144, 218, 231, 0.678);
+}
+</style>

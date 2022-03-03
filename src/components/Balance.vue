@@ -1,106 +1,129 @@
 <template>
-  <div id="home">
-  <n-page-header title="Saldo de ações">
-<n-table :bordered="false" :single-line="false">
-    <thead>
-      <tr>
-        <th>Nome</th>
-        <th>Símbolo</th>
-        <th>Quantidade</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>{{stocks.stock_name}}</td>
-        <td>{{stocks.stock_symbol}}</td>
-        <td>{{stocks.volume}}</td>
-      </tr>
-    </tbody>
-    </n-table>
-
-  <n-layout has-sider>
-<n-layout-sider>
-    <h2>
-      Saldo monetário
-    </h2>
-      <h3>
-       USD$ {{user.dollar_balance}}.00
+  <div id="balance">
+    <n-card style="background-color: #90dae7ad; height: 350px" title="Saldo de ações">
+      <n-table v-if="stocks.legnth > 0" :bordered="false" :single-line="false">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Símbolo</th>
+            <th>Quantidade</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, i) in stocks" :key="i">
+            <td>{{ item.stock_name }}</td>
+            <td>{{ item.stock_symbol }}</td>
+            <td>{{ item.volume }}</td>
+          </tr>
+        </tbody>
+      </n-table>
+      <h3 v-else>
+        Você ainda não comprou nenhuma ação.
       </h3>
-    </n-layout-sider>
-  </n-layout>
-  </n-page-header>
+      </n-card>
+        <n-card style="background-color: #90dae7ad; height: 400px;">
+          <h2>Saldo monetário</h2>
+          <h3 v-if="user.dollar_balance != null">USD$ {{ user.dollar_balance }}.00</h3>
+          <h3 v-else>R$ 00.00 </h3>
+        </n-card>
   </div>
 </template>
 
 
 <script>
-import axios from 'axios';
-import { NTable } from 'naive-ui'
-import { NPageHeader } from 'naive-ui'
-import { NLayout } from 'naive-ui' 
+import axios from "axios";
+import { NTable } from "naive-ui";
+import { NCard } from 'naive-ui'
 
 export default {
   components: {
     NTable,
-    NPageHeader,
-    NLayout
+    NCard
   },
-  name: 'home',
+  name: "balance",
   data: function () {
     return {
-      claims: '',
-      caffeineLevel: '',
+      id_user: '',
+      claims: "",
+      caffeineLevel: "",
       stocks: {},
-      accessToken: '',
-      user: ''
-    }
+      accessToken: "",
+      user: "",
+    };
   },
-  created () { this.setup(), this.getUserStockBalance(), this.getUserDollarBalance() },
+  created() {
+    this.setup(), this.getUserStockBalance(), this.getUserDollarBalance();
+  },
   methods: {
-    async setup () {
+    async setup() {
       if (this.$root.authenticated) {
-        this.claims = await this.$auth.getUser()
+        this.claims = await this.$auth.getUser();
         this.accessToken = this.$auth.getAccessToken();
         console.log(`Authorization: Bearer ${this.accessToken}`);
+        this.getIdUser()
       }
     },
 
-   async getUserStockBalance(){
+    async getIdUser() {
       this.accessToken = this.$auth.getAccessToken();
       const config = {
-      headers: { 'Authorization': 'Bearer ' + this.accessToken }
+        headers: { Authorization: "Bearer " + this.accessToken },
       };
-      console.log(config)
-      let id_user = 1;
-      let idStock = 1;
+      this.claims = await this.$auth.getUser();
+      let username = this.claims.email;
       try {
-          let response = await axios.get(`http://localhost:8080/api/user_stock/${id_user}/${idStock}`,
-          config)
-          this.stocks = response.data;
-          console.log("teste", this.stocks)
-      
+        let response = await axios.get(
+          `http://localhost:8080/api/users/username/${username}`,
+          config
+        );
+        this.id_user = response.data.id
+      } catch (error) {
+        if (error.response.status == 404) {
+          console.log(error.response.status);
+        }
       }
-      catch (error) {
-        this.stocks = `${error}`
+    },
+
+    async getUserStockBalance() {
+      await this.getIdUser()
+      this.accessToken = this.$auth.getAccessToken();
+      const config = {
+        headers: { Authorization: "Bearer " + this.accessToken },
+      };
+      console.log(config);
+      try {
+        let response = await axios.get(
+          `http://localhost:8080/api/user_stock/${this.id_user}`,
+          config
+        );
+        this.stocks = response.data;
+      } catch (error) {
+        this.stocks = `${error}`;
       }
     },
 
     async getUserDollarBalance() {
+      await this.getIdUser()
       this.accessToken = this.$auth.getAccessToken();
       const config = {
-      headers: { 'Authorization': 'Bearer ' + this.accessToken }
+        headers: { Authorization: "Bearer " + this.accessToken },
       };
-      let id_user = 1;
       try {
-          let response = await axios.get(`http://localhost:8080/api/users/${id_user}`,
-          config)
-          this.user = response.data;
-          console.log("user", this.user)
+        let response = await axios.get(
+          `http://localhost:8080/api/users/${this.id_user}`,
+          config
+        );
+        console.log(response.data)
+        this.user = response.data;
       } catch (error) {
-        this.user = `${error}`
+        this.user = `${error}`;
       }
-
-    }
-  }
-}
+    },
+  },
+};
 </script>
+
+<style scoped>
+
+
+</style>
