@@ -3,7 +3,7 @@
     <n-page-header style="font-size: 16px; padding: 16px">
       Bem vindo, {{ claims.name }} !
     </n-page-header>
-    <n-table :bordered="true" :single-line="false">
+    <!-- <n-table :bordered="true" :single-line="false">
       <thead>
         <tr>
           <th>Nome</th>
@@ -31,7 +31,7 @@
           </td>
         </tr>
       </tbody>
-    </n-table>
+    </n-table> -->
   </div>
 </template>
 
@@ -39,15 +39,13 @@
 <script>
 import axios from "axios";
 import { NPageHeader } from "naive-ui";
-import { fetchEventSource } from "@microsoft/fetch-event-source";
-import { NTable } from "naive-ui";
-import { NTime } from "naive-ui"
+
 
 export default {
   components: {
     NPageHeader,
-    NTable,
-    NTime
+    //NTable,
+    //NTime,
   },
 
   name: "home",
@@ -64,13 +62,12 @@ export default {
         dollar_balance: "",
         enabled: "",
       },
-      eventData: []
+      stocksList: ["teste"]
     };
   },
   created() {
     this.setup();
     this.getIdUser();
-    this.stockEventSource();
   },
   methods: {
     async setup() {
@@ -129,19 +126,6 @@ export default {
       }
     },
 
-    async stockEventSource() {
-      let accessToken = this.$auth.getAccessToken();
-      console.log("chegou no await");
-      await fetchEventSource("http://localhost:8082/subscribe", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        onmessage(ev) {
-          this.eventData = JSON.parse(ev.data);
-          console.log("data", this.eventData);
-        },
-      });
-    },
   },
 };
 </script>

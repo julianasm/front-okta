@@ -5,6 +5,7 @@ import LoginComponent from '@/components/Login'
 import ProfileComponent from '@/components/Profile'
 import Balance from '@/components/Balance'
 import Order from '@/components/Order'
+import StocksAtt from '@/components/StocksAtt'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -18,15 +19,28 @@ const router = createRouter({
     },
     {
       path: '/order',
-      component: Order
+      component: Order,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/stocks',
+      component: StocksAtt,
+      meta: {
+        requiresAuth: true
+      }
     },
     {
       path: '/balance',
-      component: Balance
+      component: Balance,
+      meta: {
+        requiresAuth: true
+      }
     },
     {
       path: '/login',
-      component: LoginComponent
+      component: LoginComponent,
     },
     {
       path: '/login/callback',

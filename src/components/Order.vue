@@ -10,6 +10,8 @@
       >
         <h4 style="color: black">Abrir nova ordem</h4>
       </n-button>
+      <h2>Saldo monetário</h2>
+      <h3>USD$ {{ user.dollar_balance }}.00</h3>
     </n-page-header>
     <n-modal v-model:show="showModal">
       <n-card
@@ -125,10 +127,6 @@
     >
       Você ainda não possui um histórico de ordens.
     </n-card>
-    <n-layout style="height: 200px" class="layout">
-      <h2>Saldo monetário</h2>
-      <h3>USD$ {{ user.dollar_balance }}.00</h3>
-    </n-layout>
   </div>
 </template>
 
