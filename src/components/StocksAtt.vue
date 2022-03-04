@@ -10,30 +10,33 @@ import { fetchEventSource } from "@microsoft/fetch-event-source";
 
 export default {
   created() {
-    this.stockEventSource();
+    this.Retorno();
   },
 
   methods: {
-    async stockEventSource() {
+    async Retorno() {
       let accessToken = this.$auth.getAccessToken();
-      console.log("chegou no await");
+      console.log("to entrando");
       const PauloTeste = (teste) => {
-        console.log(teste)
+        console.log("teste",teste)
       };
       await fetchEventSource("http://localhost:8082/subscribe", {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: "Bearer " + accessToken,
         },
         onmessage(ev) {
+          console.log("teste para ver se chegou")
           PauloTeste(JSON.parse(ev.data));
+
         },
-        onerror(e){
-             if (e) {
-            console.log("Sou do erro", e);
-            throw e; 
-        }
-      }})
-    }
-    }
+        onerror(err) {
+          if (err) {
+            console.log("Sou do erro", err);
+            throw err; // rethrow to stop the operation
+          }
+        },
+      });
+    },
+  },
 };
 </script>

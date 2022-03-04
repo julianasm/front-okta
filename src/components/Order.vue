@@ -10,8 +10,6 @@
       >
         <h4 style="color: black">Abrir nova ordem</h4>
       </n-button>
-      <h2>Saldo monetário</h2>
-      <h3>USD$ {{ user.dollar_balance }}.00</h3>
     </n-page-header>
     <n-modal v-model:show="showModal">
       <n-card
@@ -22,7 +20,10 @@
         role="dialog"
         aria-modal="true"
       >
-        <n-form @submit="saveOrder()">
+        <n-card title="Saldo" size="small">
+          <h3>USD$ {{ user.dollar_balance }}.00</h3>
+        </n-card>
+        <n-form style="padding: 10px;" @submit="saveOrder()">
           <n-form-item label="Selecione o tipo de ordem" path="radioGroupValue">
             <n-radio-group v-model:value="model.radioGroupValue">
               <n-space>
@@ -68,9 +69,9 @@
       v-if="orders.length > 0"
       title="Seu histórico de ordens"
       bordered
-      style="height: 500px; display: block; background-color: #bddfbf"
+      style="height: 700px; display: block; background-color: #bddfbf; padding: 15px;"
     >
-      <n-layout>
+      <n-layout style="border-radius: 20px;" >
         <n-layout-content>
           <n-table :bordered="true" :single-line="false">
             <thead>
@@ -117,6 +118,7 @@
               </tr>
             </tbody>
           </n-table>
+          <n-pagination style="padding: 15px;" v-model:page="page" :page-count="100" />
         </n-layout-content>
       </n-layout>
     </n-card>
@@ -148,6 +150,7 @@ import { NCard } from "naive-ui";
 import { NTable } from "naive-ui";
 import { NTime } from "naive-ui";
 import { NLayoutContent } from "naive-ui";
+import { NPagination } from "naive-ui";
 import { ref } from "vue";
 
 export default {
@@ -167,6 +170,7 @@ export default {
     NTable,
     NLayoutContent,
     NLayout,
+    NPagination,
   },
   name: "home",
   data: function () {
@@ -181,7 +185,7 @@ export default {
       options: [{}],
       orders: [],
       updateOrder: {
-        id: ''
+        id: "",
       },
       AllStockOptions: [],
       stockInfo: {},
@@ -241,7 +245,6 @@ export default {
           config
         );
         this.id_user = response.data.id;
-        console.log("id user", this.id_user);
       } catch (error) {
         if (error.response.status == 404) {
           this.createUser();
@@ -296,11 +299,10 @@ export default {
       if (this.venda) {
         this.options = this.AllStockOptions.map((v) => ({
           label: v.stock_name,
-          value: v.id,
+          value: v.id.id_stock,
         }));
       }
       this.venda = !this.venda;
-      console.log(this.AllStockOptions);
     },
 
     async getUserDollarBalance() {
@@ -309,14 +311,12 @@ export default {
       const config = {
         headers: { Authorization: "Bearer " + this.accessToken },
       };
-      console.log("user", this.id_user);
       try {
         let response = await axios.get(
           `http://localhost:8080/api/users/${this.id_user}`,
           config
         );
         this.user = response.data;
-        console.log("user", this.user);
       } catch (error) {
         this.user = `${error}`;
       }
@@ -337,11 +337,9 @@ export default {
           label: v.stock_name,
           value: v.id,
         }));
-        console.log(this.options);
       } catch (error) {
         this.AllStockOptions = `${error}`;
       }
-      console.log(this.tipo);
     },
 
     async findStockName(id_stock) {
@@ -355,10 +353,13 @@ export default {
         config
       );
       this.stockInfo = response.data;
-      console.log(this.stockInfo);
     },
 
     async mountOrder() {
+      console.log(
+        "o que vem no selected value da venda",
+        this.model.selectedValue
+      );
       await this.findStockName(this.model.selectedValue);
       this.userOrder.id_user = this.id_user;
       this.userOrder.id_stock = this.stockInfo.id;
@@ -386,6 +387,7 @@ export default {
           config
         );
         console.log(response);
+        this.getOpenOrders();
         return response;
       } catch (error) {
         let response = `${error}`;
@@ -401,12 +403,15 @@ export default {
       };
       console.log(config);
       try {
+        let pageSize = 8;
+        let pageNumber = 0;
         let response = await axios.get(
-          `http://localhost:8080/api/orders/${this.id_user}`,
+          `http://localhost:8080/api/orders/${this.id_user}?pageSize=${pageSize}&pageNumber=${pageNumber}`,
           config
         );
-        let orders = response.data
-        this.orders = orders.slice(0, 5);
+        let orders = response.data.content;
+        this.orders = orders;
+        console.log(response.data.content);
       } catch (error) {
         console.log(error);
         this.noOrder = true;
@@ -421,12 +426,11 @@ export default {
         headers: { Authorization: "Bearer " + this.accessToken },
         "Access-Control-Allow-Origin": "*",
       };
-      this.updateOrder.id = id
+      this.updateOrder.id = id;
       const data = this.updateOrder;
       if (status == 1) {
         newStatus = 0;
         try {
-          console.log("chegou aqui");
           let response = await axios.post(
             `http://localhost:8080/api/order-update/${newStatus}`,
             data,
@@ -439,7 +443,6 @@ export default {
       } else if (status == 0) {
         newStatus = 1;
         try {
-          console.log("chegou aqui");
           let response = await axios.post(
             `http://localhost:8080/api/order-update/${newStatus}`,
             data,

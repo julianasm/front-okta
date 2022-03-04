@@ -6,6 +6,7 @@ import ProfileComponent from '@/components/Profile'
 import Balance from '@/components/Balance'
 import Order from '@/components/Order'
 import StocksAtt from '@/components/StocksAtt'
+import StockChart from '@/components/StockChart'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -27,6 +28,13 @@ const router = createRouter({
     {
       path: '/stocks',
       component: StocksAtt,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/stocks-chart',
+      component: StockChart,
       meta: {
         requiresAuth: true
       }
