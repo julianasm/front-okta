@@ -1,16 +1,5 @@
 <template>
   <div id="home">
-    <n-page-header>
-      <n-button
-        @click="showModal = true"
-        strong
-        color="white"
-        round
-        style="margin: 24px"
-      >
-        <h4 style="color: black">Abrir nova ordem</h4>
-      </n-button>
-    </n-page-header>
     <n-modal v-model:show="showModal">
       <n-card
         style="width: 800px; color: white"
@@ -23,7 +12,7 @@
         <n-card title="Saldo" size="small">
           <h3>USD$ {{ user.dollar_balance }}.00</h3>
         </n-card>
-        <n-form style="padding: 10px;" @submit="saveOrder()">
+        <n-form style="padding: 10px" @submit="saveOrder()">
           <n-form-item label="Selecione o tipo de ordem" path="radioGroupValue">
             <n-radio-group v-model:value="model.radioGroupValue">
               <n-space>
@@ -69,9 +58,23 @@
       v-if="orders.length > 0"
       title="Seu histórico de ordens"
       bordered
-      style="height: 700px; display: block; background-color: #bddfbf; padding: 15px;"
+      style="
+        min-height: 670px;
+        display: block;
+        background-color: #bddfbf;
+        padding: 15px;
+      "
     >
-      <n-layout style="border-radius: 20px;" >
+      <n-button
+        @click="showModal = true"
+        strong
+        color="white"
+        round
+        style="margin: 26px"
+      >
+        <h4 style="color: black">Abrir nova ordem</h4>
+      </n-button>
+      <n-layout style="border-radius: 20px">
         <n-layout-content>
           <n-table :bordered="true" :single-line="false">
             <thead>
@@ -118,7 +121,12 @@
               </tr>
             </tbody>
           </n-table>
-          <n-pagination style="padding: 15px;" v-model:page="page" :page-count="100" />
+          <n-pagination
+            style="padding: 15px"
+            v-model:page="page"
+            :page-count="totalPages"
+            @click="changePage()"
+          />
         </n-layout-content>
       </n-layout>
     </n-card>
@@ -135,7 +143,6 @@
 
 <script>
 import axios from "axios";
-import { NPageHeader } from "naive-ui";
 import { NLayout } from "naive-ui";
 import { NForm } from "naive-ui";
 import { NFormItem } from "naive-ui";
@@ -155,7 +162,6 @@ import { ref } from "vue";
 
 export default {
   components: {
-    NPageHeader,
     NForm,
     NSelect,
     NFormItem,
@@ -211,6 +217,8 @@ export default {
         remaining_volume: "",
       },
       noOrder: false,
+      totalPages: 0,
+      page: -1,
     };
   },
 
@@ -403,15 +411,16 @@ export default {
       };
       console.log(config);
       try {
-        let pageSize = 8;
+        let pageSize = 5;
         let pageNumber = 0;
         let response = await axios.get(
           `http://localhost:8080/api/orders/${this.id_user}?pageSize=${pageSize}&pageNumber=${pageNumber}`,
           config
         );
         let orders = response.data.content;
+        this.totalPages = response.data.totalPages - 1;
+        this.page = pageNumber;
         this.orders = orders;
-        console.log(response.data.content);
       } catch (error) {
         console.log(error);
         this.noOrder = true;
@@ -452,6 +461,27 @@ export default {
         } catch (error) {
           console.log(error);
         }
+      }
+    },
+
+    async changePage() {
+      this.accessToken = this.$auth.getAccessToken();
+      const config = {
+        headers: { Authorization: "Bearer " + this.accessToken },
+      };
+      console.log(config);
+      try {
+        let pageSize = 5;
+        let response = await axios.get(
+          `http://localhost:8080/api/orders/${this.id_user}?pageSize=${pageSize}&pageNumber=${this.page}`,
+          config
+        );
+        let orders = response.data.content;
+        this.totalPages = response.data.totalPages - 1;
+        this.orders = orders;
+      } catch (error) {
+        console.log(error);
+        this.noOrder = true;
       }
     },
   },
