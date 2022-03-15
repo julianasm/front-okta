@@ -3,51 +3,15 @@
     <n-page-header style="font-size: 16px; padding: 16px">
       Bem vindo, {{ claims.name }} !
     </n-page-header>
-    <!-- <n-table :bordered="true" :single-line="false">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Símbolo</th>
-          <th>Max ask</th>
-          <th>Min ask</th>
-          <th>Max bid</th>
-          <th>Min ask</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(item, i) in eventData" :key="i">
-          <td>{{ item.stock_name }}</td>
-          <td>{{ item.stock_symbol }}</td>
-          <td>{{ item.ask_max }}</td>
-          <td>{{ item.ask_min }}</td>
-          <td>{{ item.bid_max}}</td>
-          <td>{{ item.bid_min }}</td>
-          <td>
-            <n-time
-              v-if="item.created_on != null"
-              :time="Date.parse(item.created_on)"
-              format="dd/MM/yyyy"
-            ></n-time>
-          </td>
-        </tr>
-      </tbody>
-    </n-table> -->
   </div>
 </template>
 
 
 <script>
 import axios from "axios";
-import { NPageHeader } from "naive-ui";
 
 
 export default {
-  components: {
-    NPageHeader,
-    //NTable,
-    //NTime,
-  },
-
   name: "home",
   data: function () {
     return {

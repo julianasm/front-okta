@@ -52,11 +52,16 @@
           </n-form-item>
         </n-form>
         <n-button @click="mountOrder()"> Salvar </n-button>
+      <n-alert title="Success Text" type="success" closable>
+        Ordem criada com sucesso!
+      </n-alert>
+      <n-alert title="Success Text" type="warning" closable>
+        Saldo insuficiente para a ordem desejada.
+      </n-alert>
       </n-card>
     </n-modal>
     <n-card
       v-if="orders.length > 0"
-      title="Seu histórico de ordens"
       bordered
       style="
         min-height: 670px;
@@ -65,28 +70,35 @@
         padding: 15px;
       "
     >
-      <n-button
-        @click="showModal = true"
-        strong
-        color="white"
-        round
-        style="margin: 26px"
-      >
-        <h4 style="color: black">Abrir nova ordem</h4>
-      </n-button>
+      <n-row gutter="12">
+        <n-col :span="4">
+          <h2>Seu historico de ordes</h2>
+        </n-col>
+        <n-col :span="4">
+          <n-button
+            @click="showModal = true"
+            strong
+            color="white"
+            round
+            style="margin: 20px"
+          >
+            <h4 style="color: black">Abrir nova ordem</h4>
+          </n-button>
+        </n-col>
+      </n-row>
       <n-layout style="border-radius: 20px">
         <n-layout-content>
           <n-table :bordered="true" :single-line="false">
             <thead>
               <tr>
-                <th>Nome</th>
-                <th>Símbolo</th>
-                <th>Quantidade</th>
-                <th>Preço</th>
-                <th>Tipo</th>
-                <th>Status</th>
-                <th>Data de abertura</th>
-                <th>Gerenciar</th>
+                <th scope>Nome</th>
+                <th scope>Símbolo</th>
+                <th scope>Quantidade</th>
+                <th scope>Preço</th>
+                <th scope>Tipo</th>
+                <th scope>Status</th>
+                <th scope>Data de abertura</th>
+                <th scope>Gerenciar</th>
               </tr>
             </thead>
             <tbody>
@@ -131,11 +143,20 @@
       </n-layout>
     </n-card>
     <n-card
-      v-else-if="noOrder"
+      v-else-if="orders.length == 0"
       bordered
-      style="height: 200px; background-color: #dff0e0"
+      style="min-height: 750px; background-color: #dff0e0"
     >
       Você ainda não possui um histórico de ordens.
+      <n-button
+        @click="showModal = true"
+        strong
+        color="white"
+        round
+        style="margin: 20px"
+      >
+        <h4 style="color: black">Abrir nova ordem</h4>
+      </n-button>
     </n-card>
   </div>
 </template>
@@ -143,41 +164,9 @@
 
 <script>
 import axios from "axios";
-import { NLayout } from "naive-ui";
-import { NForm } from "naive-ui";
-import { NFormItem } from "naive-ui";
-import { NSelect } from "naive-ui";
-import { NInputNumber } from "naive-ui";
-import { NRadio } from "naive-ui";
-import { NRadioGroup } from "naive-ui";
-import { NSpace } from "naive-ui";
-import { NButton } from "naive-ui";
-import { NModal } from "naive-ui";
-import { NCard } from "naive-ui";
-import { NTable } from "naive-ui";
-import { NTime } from "naive-ui";
-import { NLayoutContent } from "naive-ui";
-import { NPagination } from "naive-ui";
 import { ref } from "vue";
 
 export default {
-  components: {
-    NForm,
-    NSelect,
-    NFormItem,
-    NInputNumber,
-    NRadio,
-    NSpace,
-    NRadioGroup,
-    NButton,
-    NModal,
-    NCard,
-    NTime,
-    NTable,
-    NLayoutContent,
-    NLayout,
-    NPagination,
-  },
   name: "home",
   data: function () {
     return {
@@ -216,17 +205,17 @@ export default {
         status: "",
         remaining_volume: "",
       },
-      noOrder: false,
       totalPages: 0,
       page: -1,
+      erro: ""
     };
   },
 
   created() {
-    this.setup(),
-      this.getIdUser(),
-      this.getOpenOrders(),
-      this.getUserStockBalance(),
+    this.setup();
+      this.getIdUser();
+      this.getOpenOrders();
+      this.getUserStockBalance();
       this.getUserDollarBalance();
   },
   methods: {
@@ -275,7 +264,6 @@ export default {
           config
         );
         this.stocks = response.data;
-        //console.log(this.stocks);
       } catch (error) {
         this.stocks = `${error}`;
       }
@@ -398,8 +386,9 @@ export default {
         this.getOpenOrders();
         return response;
       } catch (error) {
-        let response = `${error}`;
-        console.log(response);
+        if (error.response.status == 400){
+          this.erro = error;
+        }
       }
     },
 
@@ -423,13 +412,11 @@ export default {
         this.orders = orders;
       } catch (error) {
         console.log(error);
-        this.noOrder = true;
       }
     },
 
     async changeStatus(status, id) {
       console.log(status, id);
-      let newStatus = status;
       this.accessToken = this.$auth.getAccessToken();
       const config = {
         headers: { Authorization: "Bearer " + this.accessToken },
@@ -438,7 +425,7 @@ export default {
       this.updateOrder.id = id;
       const data = this.updateOrder;
       if (status == 1) {
-        newStatus = 0;
+        let newStatus = 0;
         try {
           let response = await axios.post(
             `http://localhost:8080/api/order-update/${newStatus}`,
@@ -450,7 +437,7 @@ export default {
           console.log(error);
         }
       } else if (status == 0) {
-        newStatus = 1;
+        let newStatus = 1;
         try {
           let response = await axios.post(
             `http://localhost:8080/api/order-update/${newStatus}`,
@@ -481,7 +468,6 @@ export default {
         this.orders = orders;
       } catch (error) {
         console.log(error);
-        this.noOrder = true;
       }
     },
   },
