@@ -17,6 +17,7 @@
     "core-js": "^3.6.5",
     "devextreme": "21.2.6",
     "devextreme-vue": "21.2.6",
+    "dotenv": "^16.0.0",
     "event-source-polyfill": "^1.0.25",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0-0"

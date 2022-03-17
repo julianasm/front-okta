@@ -9,7 +9,7 @@
 
 <script>
 import axios from "axios";
-
+require('dotenv').config({path: './.env'})
 
 export default {
   name: "home",
@@ -66,13 +66,12 @@ export default {
     },
 
     async createUser() {
-      let password = "123456"
       this.accessToken = this.$auth.getAccessToken();
       const config = {
         headers: { Authorization: "Bearer " + this.accessToken },
       };
       this.user.username = this.claims.email;
-      this.user.password = password;
+      this.user.password = process.env.MY_PASSWORD;
       this.user.dollar_balance = 1000;
       this.user.enabled = true;
       const data = this.user;
