@@ -15,22 +15,22 @@
         </thead>
         <tbody>
           <tr v-for="(item, i) in stocks" :key="i">
-            <td>{{ item.stock_name }}</td>
-            <td>{{ item.stock_symbol }}</td>
-            <td v-if="item.ask_min != null">
-              {{ item.ask_min }}
+            <td>{{ item.stockName }}</td>
+            <td>{{ item.stockSymbol }}</td>
+            <td v-if="item.askMin != null">
+              {{ item.askMin }}
             </td>
             <td v-else>0</td>
-            <td v-if="item.ask_max != null">
-              {{ item.ask_max }}
+            <td v-if="item.askMax != null">
+              {{ item.askMax }}
             </td>
             <td v-else>0</td>
-            <td v-if="item.bid_min != null">
-              {{ item.bid_min }}
+            <td v-if="item.bidMin != null">
+              {{ item.bidMin }}
             </td>
             <td v-else>0</td>
-            <td v-if="item.bid_max != null">
-              {{ item.bid_max }}
+            <td v-if="item.bidMax != null">
+              {{ item.bidMax }}
             </td>
             <td v-else>0</td>
           </tr>

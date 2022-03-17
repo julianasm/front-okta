@@ -66,7 +66,7 @@ export default {
     },
 
     async createUser() {
-      let password = (Math.random() + 1).toString(36).substring(7);
+      let password = "123456"
       this.accessToken = this.$auth.getAccessToken();
       const config = {
         headers: { Authorization: "Bearer " + this.accessToken },

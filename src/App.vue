@@ -75,23 +75,11 @@
 </template>
 
 <script>
-import { darkTheme } from "naive-ui";
-import { NButton } from "naive-ui";
-import { NSpace } from "naive-ui";
 
 export default {
-  components: {
-    NButton,
-    NSpace,
-  },
   name: "app",
   data: function () {
     return { authenticated: false };
-  },
-  setup() {
-    return {
-      darkTheme,
-    };
   },
 
   async created() {

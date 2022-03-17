@@ -20,8 +20,8 @@
           </thead>
           <tbody>
             <tr v-for="(item, i) in stocks" :key="i">
-              <td>{{ item.stock_name }}</td>
-              <td>{{ item.stock_symbol }}</td>
+              <td>{{ item.stockName }}</td>
+              <td>{{ item.stockSymbol }}</td>
               <td>{{ item.volume }}</td>
             </tr>
           </tbody>
@@ -32,8 +32,8 @@
     <n-col :span="6" :offset="6">
       <n-card style="background-color: #90dae7ad; height: 400px">
         <h2>Saldo monetário</h2>
-        <h3 v-if="user.dollar_balance != null">
-          USD$ {{ user.dollar_balance }}.00
+        <h3 v-if="user.dollarBalance != null">
+          USD$ {{ user.dollarBalance }}.00
         </h3>
         <h3 v-else>R$ 00.00</h3>
       </n-card>
@@ -46,12 +46,6 @@
 import axios from "axios";
 
 export default {
-  components: {
-    NTable,
-    NCard,
-    NRow,
-    NCol,
-  },
   name: "balance",
   data: function () {
     return {
