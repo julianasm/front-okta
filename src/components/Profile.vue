@@ -4,7 +4,8 @@
     <p>
       Below is the information from your ID token.
     </p>
-    <table>
+    <table scope>
+      <caption></caption>
       <thead>
       <tr>
         <th>Claim</th>
